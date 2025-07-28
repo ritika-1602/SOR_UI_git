@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
+import { Layout, Table, Button, Input, Space, Typography } from 'antd';
 import { useNavigate } from 'react-router-dom';
-import LogoutButton from './LogoutButton';
-import styles from './Dashboard.module.css';
-import logo from '../assets/logo-further-2.svg';
+import { LogoutOutlined, PlusOutlined, DownloadOutlined } from '@ant-design/icons';
 import * as XLSX from 'xlsx';
+import logo from '../assets/logo-further-2.svg';
+
+const { Header, Content } = Layout;
+const { Title } = Typography;
 
 const dummyClients = [
   {
@@ -16,32 +19,17 @@ const dummyClients = [
     channel: 'Online',
     monthlyReport: true,
   },
-  {
-    id: 2,
-    clientCode: 'CL002',
-    clientName: 'Beta Ltd',
-    reinsurer: 'Reinsure B',
-    category: 'Europe',
-    clientCountry: 'Germany',
-    channel: 'Offline',
-    monthlyReport: false,
-  },
-  {
-    id: 3,
-    clientCode: 'CL003',
-    clientName: 'Gamma Inc',
-    reinsurer: 'Reinsure C',
-    category: 'North America',
-    clientCountry: 'USA',
-    channel: 'Hybrid',
-    monthlyReport: true,
-  },
+  // Add more dummy data...
 ];
 
 const Dashboard = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [clients, setClients] = useState(dummyClients);
   const navigate = useNavigate();
+
+  const filteredClients = dummyClients.filter(client =>
+    client.clientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    client.clientCode.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   const exportToExcel = (data, filename) => {
     const worksheet = XLSX.utils.json_to_sheet(data);
@@ -50,101 +38,75 @@ const Dashboard = () => {
     XLSX.writeFile(workbook, filename);
   };
 
-  const handleDownloadAll = () => {
-    exportToExcel(clients, 'All_Clients.xlsx');
-  };
-
-  const handleDownloadCurrent = () => {
-    exportToExcel(filteredClients, 'Current_Page_Clients.xlsx');
-  };
-
-  const filteredClients = clients.filter(client =>
-    client.clientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    client.clientCode.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const columns = [
+    { title: 'Code', dataIndex: 'clientCode' },
+    { title: 'Name', dataIndex: 'clientName' },
+    { title: 'Reinsurer', dataIndex: 'reinsurer' },
+    { title: 'Region', dataIndex: 'category' },
+    { title: 'Country', dataIndex: 'clientCountry' },
+    { title: 'Channel', dataIndex: 'channel' },
+    {
+      title: 'Status',
+      dataIndex: 'monthlyReport',
+      render: val => val ? 'Active' : 'Inactive',
+    },
+    {
+      title: 'Action',
+      render: (_, record) => (
+        <Button type="link" onClick={() => navigate(`/clients/update/${record.id}`)}>Update</Button>
+      ),
+    },
+  ];
 
   return (
-    <div className={styles.dashboardContainer}>
-      {/* NAVBAR */}
-      <nav className={styles.navbar}>
-        <img src={logo} alt="further logo" className={styles.logo} />
-        <LogoutButton />
-      </nav>
+    <Layout className="min-h-screen">
+      <Header className="bg-blue-100 flex justify-between items-center px-6 shadow">
+        <img src={logo} alt="logo" className="h-10" />
+        <Button icon={<LogoutOutlined />} onClick={() => {
+          localStorage.removeItem("isAuthenticated");
+          navigate('/');
+        }}>
+          Logout
+        </Button>
+      </Header>
 
-      {/* HEADER */}
-      <div className={styles.headerSection}>
-        <h1 className={styles.dashboardTitle}>Administration Dashboard</h1>
-        <button onClick={() => navigate('/create-client')} className={styles.navigateButton}>
-          Create New Client
-        </button>
-      </div>
+      <Content className="p-6 bg-gray-100">
+        <div className="flex justify-between items-center mb-6">
+          <Title level={3}>Administration Dashboard</Title>
+          <Button type="primary" icon={<PlusOutlined />} onClick={() => navigate('/create-client')}>
+            Create Client
+          </Button>
+        </div>
 
-      {/* SEARCH BOX */}
-      <div className={styles.searchSection}>
-        <input
-          type="text"
-          placeholder="Search by client name or code"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className={styles.searchInput}
+        <div className="flex justify-between flex-wrap gap-2 mb-4">
+          <Input.Search
+            placeholder="Search by name or code"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            style={{ maxWidth: 400 }}
+            allowClear
+          />
+          <Space>
+            <Button icon={<DownloadOutlined />} onClick={() => exportToExcel(filteredClients, 'CurrentClients.xlsx')}>
+              Download Current Page
+            </Button>
+            <Button icon={<DownloadOutlined />} onClick={() => exportToExcel(dummyClients, 'AllClients.xlsx')}>
+              Download All
+            </Button>
+          </Space>
+        </div>
+
+        <Table
+          dataSource={filteredClients}
+          columns={columns}
+          rowKey="id"
+          pagination={{ pageSize: 5 }}
+          bordered
         />
-      </div>
-
-      {/* DOWNLOAD BUTTONS */}
-      <div className={styles.downloadSection}>
-        <button onClick={handleDownloadCurrent} className={styles.exportButton}>
-          Download Current Page
-        </button>
-        <button onClick={handleDownloadAll} className={styles.exportButton}>
-          Download All Records
-        </button>
-      </div>
-
-      {/* TABLE */}
-      <div className={styles.dataTableContainer}>
-        <table className={styles.dataTable}>
-          <thead>
-            <tr>
-              <th>Code</th>
-              <th>Name</th>
-              <th>Reinsurer</th>
-              <th>Region</th>
-              <th>Country</th>
-              <th>Channel</th>
-              <th>Status</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredClients.map(client => (
-              <tr key={client.id}>
-                <td>{client.clientCode}</td>
-                <td>{client.clientName}</td>
-                <td>{client.reinsurer}</td>
-                <td>{client.category || '-'}</td>
-                <td>{client.clientCountry}</td>
-                <td>{client.channel}</td>
-                <td>{client.monthlyReport ? 'Active' : 'Inactive'}</td>
-                <td>
-                  <button
-                    className={styles.navigateButton}
-                    onClick={() => navigate(`/clients/update/${client.id}`)}
-                  >
-                    Update
-                  </button>
-                </td>
-              </tr>
-            ))}
-            {filteredClients.length === 0 && (
-              <tr>
-                <td colSpan="8" style={{ textAlign: 'center' }}>No clients found.</td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
-    </div>
+      </Content>
+    </Layout>
   );
 };
 
 export default Dashboard;
+      
