@@ -17,7 +17,9 @@ const CreateClientSection = ({ initialData, onContinue, onExit, onCancel }) => {
   const handleFinish = (values) => {
     onContinue(values); // Pass form data to parent
   };
-
+  const handleContinue=(values) =>{
+    onContinue(values);
+  }
   const handleSaveExit = () => {
     const data = form.getFieldsValue();
     onExit(data); // Pass current form data to exit handler
@@ -176,7 +178,7 @@ const CreateClientSection = ({ initialData, onContinue, onExit, onCancel }) => {
         </Row>
 
         <div className="flex gap-4 mt-6">
-          <Button type="primary" htmlType="submit">Save & Continue</Button>
+          <Button type="primary" onClick={handleContinue}>Save & Continue</Button>
           <Button type="default" onClick={handleSaveExit}>Save & Exit</Button>
           <Button danger onClick={handleCancel}>Cancel</Button>
         </div>
