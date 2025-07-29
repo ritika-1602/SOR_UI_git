@@ -178,7 +178,7 @@ const CreateClientSection = ({ initialData, onContinue, onExit, onCancel }) => {
         </Row>
 
         <div className="flex gap-4 mt-6">
-          <Button type="primary" onClick={handleContinue}>Save & Continue</Button>
+          <Button type="primary" onClick={()=>form.submit()}>Save & Continue</Button>
           <Button type="default" onClick={handleSaveExit}>Save & Exit</Button>
           <Button danger onClick={handleCancel}>Cancel</Button>
         </div>

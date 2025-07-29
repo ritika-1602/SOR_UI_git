@@ -86,6 +86,12 @@ const CreateProductSection = ({
     { title: 'Product Type', dataIndex: 'productType' }
   ];
 
+  useEffect(() => {
+  console.log('Received clientData in Product Section:', clientData);
+  console.log('Initial Product List:', productList);
+}, [clientData, productList]);
+
+
   return (
     <div className="min-h-screen bg-gray-50 px-6 py-8">
       <div className="flex justify-between items-center mb-6">

@@ -1,105 +1,157 @@
-import React, { useState } from "react";
-import { Button, Input, Modal, Table, Typography, DatePicker } from "antd";
-import dayjs from "dayjs";
+import React, { useState } from 'react';
+import { Table, Button, Modal, Form, InputNumber, DatePicker, Typography, Space } from 'antd';
+import dayjs from 'dayjs';
 
 const { Title } = Typography;
 
-const CreateRetentionSection = ({ clientData, onContinue, onCancel, onExit }) => {
-  const [retentionsArray, setRetentionsArray] = useState([]);
-  const [modalVisible, setModalVisible] = useState(false);
+const CreateRetentionSection = ({ clientData, retentionList = [], onSave, onBack, onCancel }) => {
+  const [form] = Form.useForm();
+  const [editForm] = Form.useForm();
 
-  const [newRetentionData, setNewRetentionData] = useState({
-    effectiveFrom: null,
-    effectiveTo: null,
-    retention: ""
-  });
+  const [retentions, setRetentions] = useState(retentionList);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isEditModalVisible, setIsEditModalVisible] = useState(false);
+  const [editingRecord, setEditingRecord] = useState(null);
 
-  const handleAddRetention = () => {
-    if (!newRetentionData.effectiveFrom || !newRetentionData.retention) return;
+  const showModal = () => {
+    setIsModalVisible(true);
+  };
 
-    const newEntry = {
-      id: Date.now(),
-      codeRetention: `RET-${retentionsArray.length + 1}`,
-      clientCode: clientData?.clientCode || "N/A",
-      clientName: clientData?.clientName || "N/A",
-      effectiveFrom: newRetentionData.effectiveFrom,
-      effectiveTo: newRetentionData.effectiveTo,
-      retention: newRetentionData.retention
-    };
+  const handleCancel = () => {
+    setIsModalVisible(false);
+    form.resetFields();
+  };
 
-    setRetentionsArray([...retentionsArray, newEntry]);
-    setNewRetentionData({ effectiveFrom: null, effectiveTo: null, retention: "" });
-    setModalVisible(false);
+  const handleSave = () => {
+    form.validateFields().then(values => {
+      const formatted = {
+        ...values,
+        effectiveFrom: values.effectiveFrom.format('YYYY-MM-DD'),
+        effectiveTo: values.effectiveTo ? values.effectiveTo.format('YYYY-MM-DD') : null,
+        retentionPercent: parseFloat(values.retentionPercent),
+      };
+      onSave(formatted);
+      setRetentions([...retentions, {
+        ...formatted,
+        retentionCode: `RET${retentions.length + 1}`.padStart(6, '0'),
+        clientCode: clientData.clientCode
+      }]);
+      setIsModalVisible(false);
+      form.resetFields();
+    });
+  };
+
+  const handleEdit = (record) => {
+    setEditingRecord(record);
+    editForm.setFieldsValue({
+      ...record,
+      effectiveFrom: dayjs(record.effectiveFrom),
+      effectiveTo: record.effectiveTo ? dayjs(record.effectiveTo) : null,
+    });
+    setIsEditModalVisible(true);
+  };
+
+  const handleEditSave = () => {
+    editForm.validateFields().then(values => {
+      const updatedRetention = {
+        ...editingRecord,
+        ...values,
+        effectiveFrom: values.effectiveFrom.format('YYYY-MM-DD'),
+        effectiveTo: values.effectiveTo ? values.effectiveTo.format('YYYY-MM-DD') : null,
+        retentionPercent: parseFloat(values.retentionPercent),
+      };
+
+      const updatedList = retentions.map(item =>
+        item.retentionCode === editingRecord.retentionCode ? updatedRetention : item
+      );
+
+      setRetentions(updatedList);
+      setIsEditModalVisible(false);
+      setEditingRecord(null);
+    });
   };
 
   const columns = [
-    { title: "Code Retention", dataIndex: "codeRetention", key: "codeRetention" },
-    { title: "Client Code", dataIndex: "clientCode", key: "clientCode" },
-    { title: "Client Name", dataIndex: "clientName", key: "clientName" },
-    { title: "Effective Date", dataIndex: "effectiveFrom", key: "effectiveFrom", render: (text) => text ? dayjs(text).format("YYYY-MM-DD") : "-" },
-    { title: "Effective To", dataIndex: "effectiveTo", key: "effectiveTo", render: (text) => text ? dayjs(text).format("YYYY-MM-DD") : "-" },
-    { title: "Retention (%)", dataIndex: "retention", key: "retention" },
+    { title: 'Retention Code', dataIndex: 'retentionCode' },
+    { title: 'Effective From', dataIndex: 'effectiveFrom' },
+    { title: 'Effective To', dataIndex: 'effectiveTo' },
+    { title: 'Retention %', dataIndex: 'retentionPercent' },
+    {
+      title: 'Action',
+      render: (_, record) => (
+        <Button onClick={() => handleEdit(record)}>Edit</Button>
+      ),
+    },
   ];
 
   return (
-    <div className="p-6 bg-white shadow rounded">
-      <Title level={4} className="text-center mb-4">Create Retention</Title>
+    <div className="p-6">
+      <Title level={4}>Retention Info - {clientData?.clientName}</Title>
       
-      <div className="mb-4">
-        <p><strong>Client:</strong> {clientData?.clientName || "N/A"}</p>
-        <p><strong>Client Code:</strong> {clientData?.clientCode || "N/A"}</p>
-      </div>
-
-      <Button type="primary" onClick={() => setModalVisible(true)}>Update Rates</Button>
-
       <Table
-        dataSource={retentionsArray}
+        dataSource={retentions}
         columns={columns}
-        rowKey="id"
+        rowKey="retentionCode"
         pagination={false}
-        className="mt-4"
+        className="mb-4"
       />
 
-      <div className="mt-6 flex justify-center gap-4">
-        <Button onClick={onCancel}>Cancel</Button>
-        <Button onClick={onExit}>Save & Exit</Button>
-        <Button type="primary" onClick={onContinue}>Next</Button>
-      </div>
+      <Space>
+        <Button type="primary" onClick={showModal}>
+          + Add Retention
+        </Button>
+        <Button onClick={onBack}>Back</Button>
+        <Button danger onClick={onCancel}>Cancel</Button>
+      </Space>
 
+      {/* Add Retention Modal */}
       <Modal
-        title="Add Retention Rate"
-        open={modalVisible}
-        onOk={handleAddRetention}
-        onCancel={() => setModalVisible(false)}
-        okText="Add"
+        title="Add Retention"
+        visible={isModalVisible}
+        onOk={handleSave}
+        onCancel={handleCancel}
+        okText="Save & Exit"
       >
-        <div className="flex flex-col gap-4">
-          <div>
-            <label>Effective Date*</label>
-            <DatePicker
-              className="w-full"
-              value={newRetentionData.effectiveFrom}
-              onChange={(date) => setNewRetentionData({ ...newRetentionData, effectiveFrom: date })}
-            />
-          </div>
-          <div>
-            <label>Effective To</label>
-            <DatePicker
-              className="w-full"
-              value={newRetentionData.effectiveTo}
-              onChange={(date) => setNewRetentionData({ ...newRetentionData, effectiveTo: date })}
-            />
-          </div>
-          <div>
-            <label>Retention (%)*</label>
-            <Input
-              type="number"
-              value={newRetentionData.retention}
-              onChange={(e) => setNewRetentionData({ ...newRetentionData, retention: e.target.value })}
-              placeholder="Retention Percentage"
-            />
-          </div>
-        </div>
+        <Form form={form} layout="vertical">
+          <Form.Item label="Effective From" name="effectiveFrom" rules={[{ required: true }]}>
+            <DatePicker format="YYYY-MM-DD" className="w-full" />
+          </Form.Item>
+          <Form.Item label="Effective To" name="effectiveTo">
+            <DatePicker format="YYYY-MM-DD" className="w-full" />
+          </Form.Item>
+          <Form.Item
+            label="Retention %"
+            name="retentionPercent"
+            rules={[{ required: true, message: 'Enter retention percent' }]}
+          >
+            <InputNumber className="w-full" min={0} max={100} />
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      {/* Edit Retention Modal */}
+      <Modal
+        title="Edit Retention"
+        visible={isEditModalVisible}
+        onOk={handleEditSave}
+        onCancel={() => setIsEditModalVisible(false)}
+        okText="Update"
+      >
+        <Form form={editForm} layout="vertical">
+          <Form.Item label="Effective From" name="effectiveFrom" rules={[{ required: true }]}>
+            <DatePicker format="YYYY-MM-DD" className="w-full" />
+          </Form.Item>
+          <Form.Item label="Effective To" name="effectiveTo">
+            <DatePicker format="YYYY-MM-DD" className="w-full" />
+          </Form.Item>
+          <Form.Item
+            label="Retention %"
+            name="retentionPercent"
+            rules={[{ required: true, message: 'Enter retention percent' }]}
+          >
+            <InputNumber className="w-full" min={0} max={100} />
+          </Form.Item>
+        </Form>
       </Modal>
     </div>
   );

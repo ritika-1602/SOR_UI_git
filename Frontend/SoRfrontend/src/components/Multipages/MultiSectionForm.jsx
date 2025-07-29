@@ -1,18 +1,22 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Tabs, message } from 'antd';
-import axios from 'axios';
 
 import CreateClientSection from './CreateClientSection';
 import CreateProductSection from './CreateProductSection';
 import CreateRetentionSection from './CreateRetentionSection';
+import CreatePremiumSection from './CreatePremiumSection';
+import CreateDiscountSection from './CreateDiscountSection';
 
 const MultiTabForm = ({ initialData = {}, clientId = null }) => {
   const navigate = useNavigate();
   const [clientData, setClientData] = useState(initialData || {});
   const [productData, setProductData] = useState([]);
+  const [selectedProduct, setSelectedProduct] = useState(null);
   const [retentions, setRetentions] = useState([]);
-  const [step, setStep] = useState('client'); // 'client' or 'productInfo'
+  const [premiumsMap, setPremiumsMap] = useState({});
+  const [discountsMap, setDiscountsMap] = useState({});
+  const [step, setStep] = useState('client');
   const [activeTab, setActiveTab] = useState('products');
 
   const handleClientContinue = (data) => {
@@ -22,13 +26,29 @@ const MultiTabForm = ({ initialData = {}, clientId = null }) => {
   };
 
   const handleAddProduct = (product) => {
-    setProductData(prev => [...prev, product]);
+    setProductData((prev) => [...prev, product]);
     message.success('Product Added');
   };
 
-  const handleAddRetention = (ret) => {
-    setRetentions(prev => [...prev, ret]);
-    message.success('Retention Added');
+  const handleSelectProduct = (product) => {
+    setSelectedProduct(product);
+    setActiveTab('premiums');
+  };
+
+  const handleSavePremiums = (data) => {
+    if (selectedProduct?.productCode) {
+      setPremiumsMap((prev) => ({ ...prev, [selectedProduct.productCode]: data }));
+      message.success('Premiums saved');
+      setActiveTab('discounts');
+    }
+  };
+
+  const handleSaveDiscounts = (data) => {
+    if (selectedProduct?.productCode) {
+      setDiscountsMap((prev) => ({ ...prev, [selectedProduct.productCode]: data }));
+      message.success('Discounts saved');
+      setActiveTab('products');
+    }
   };
 
   if (step === 'client') {
@@ -42,52 +62,77 @@ const MultiTabForm = ({ initialData = {}, clientId = null }) => {
     );
   }
 
-  const retentionsArray = [
-  {
-    retentionCode: "RET001",
-    clientCode: "TEST03",
-    effectiveFrom: "2024-01-01",
-    effectiveTo: "2025-01-01",
-    retentionPercent: 12.5,
-  },
-  {
-    retentionCode: "RET002",
-    clientCode: "TEST03",
-    effectiveFrom: "2025-02-01",
-    effectiveTo: null,
-    retentionPercent: 10.0,
-  }
-];
-
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="bg-white rounded shadow p-6">
-        <h2 className="text-2xl font-semibold mb-4">Product Info - {clientData?.clientName}</h2>
+        <Tabs
+          activeKey={activeTab}
+          onChange={setActiveTab}
+          items={[
+            {
+              key: 'products',
+              label: 'Products',
+              children: (
+                <CreateProductSection
+                  productList={productData}
+                  onAdd={handleAddProduct}
+                  clientData={clientData}
+                  onExit={() => navigate('/dashboard')}
+                  onSelect={handleSelectProduct}
+                />
+              ),
+            },
+            {
+              key: 'retentions',
+              label: 'Retentions',
+              children: (
+                <CreateRetentionSection
+                  clientData={clientData}
+                  retentionList={retentions}
+                  onSave={(data) => setRetentions(data)}
+                  onBack={() => console.log('Back')}
+                  onCancel={() => navigate('/dashboard')}
+                />
+              ),
+            },
+            {
+              key: 'premiums',
+              label: 'Premiums',
+              children: (
+                <CreatePremiumSection
+                  selectedProduct={selectedProduct}
+                  clientData={clientData}
+                  premiums={premiumsMap[selectedProduct?.productCode] || []}
+                  setPremiums={(updatedPremiums) =>
+                    setPremiumsMap((prev) => ({
+                      ...prev,
+                      [selectedProduct?.productCode]: updatedPremiums,
+                    }))
+                  }
+                  onSave={handleSavePremiums}
+                  onBack={() => setActiveTab('products')}
+                  onCancel={() => navigate('/dashboard')}
+                />
+              ),
+            },
 
-        <Tabs activeKey={activeTab} onChange={setActiveTab}>
-          <Tabs.TabPane tab="Products" key="products">
-            <CreateProductSection
-              productList={productData}
-              onAdd={handleAddProduct}
-              clientData={clientData}
-              onExit={() => navigate('/dashboard')}
-              onSelect={(prod) => console.log('Product selected:', prod)}
-            />
-          </Tabs.TabPane>
-
-          <Tabs.TabPane tab="Retentions" key="retentions">
-            <CreateRetentionSection
-              clientData={{ clientName: 'TEST P', clientCode: 'TEST03' }}
-              retentionList={retentionsArray} // Sample retentions
-              onSave={(newRetentionData) => console.log(newRetentionData)}
-              onBack={() => console.log("Go to previous step")}
-              onCancel={() => console.log("Cancel and exit")}
-            />
-
-          </Tabs.TabPane>
-        </Tabs>
+            {
+              key: 'discounts',
+              label: 'Discounts',
+              children: (
+                <CreateDiscountSection
+                  discounts={discountsMap[selectedProduct?.productCode] || []}
+                  onSave={handleSaveDiscounts}
+                  onBack={() => setActiveTab('premiums')}
+                  onCancel={() => navigate('/dashboard')}
+                />
+              ),
+            },
+          ]}
+        />
       </div>
     </div>
   );
 };
+
 export default MultiTabForm;
