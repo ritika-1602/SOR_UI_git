@@ -11,27 +11,28 @@ const MultiTabForm = ({ isEditMode = false, isCreateMode = false, initialData = 
   const [clientData, setClientData] = useState(initialData || {});
 
   const handleClientContinue = (data) => {
-    setClientData(data);
-    message.success('Client data saved!');
-    handleSubmit(data); // Immediate submit after first section
-  };
+  const wrappedData = { client_info: data };  // Wrap client info correctly
+  setClientData(wrappedData);
+  message.success('Client data saved!');
+  handleSubmit(wrappedData); // Submit wrapped data
+};
 
-  const handleSubmit = async (data) => {
-    try {
-      const url = isEditMode
-        ? `http://127.0.0.1:8000/api/auth/clients/${clientId}/`
-        : `http://127.0.0.1:8000/api/auth/clients/`;
+const handleSubmit = async (data) => {
+  try {
+    const url = isEditMode
+      ? `http://127.0.0.1:8000/api/auth/clients/${clientId}/`
+      : `http://127.0.0.1:8000/api/auth/clients/`;
 
-      const method = isEditMode ? axios.put : axios.post;
-      await method(url, data);
+    const method = isEditMode ? axios.put : axios.post;
+    await method(url, data, { withCredentials: true });
 
-      message.success(isEditMode ? 'Client updated successfully!' : 'Client created successfully!');
-      navigate('/dashboard');
-    } catch (err) {
-      console.error('Error submitting client:', err.response?.data || err.message);
-      message.error('Failed to submit client data.');
-    }
-  };
+    message.success(isEditMode ? 'Client updated successfully!' : 'Client created successfully!');
+    navigate('/dashboard');
+  } catch (err) {
+    console.error('Error submitting client:', err.response?.data || err.message);
+    message.error('Failed to submit client data.');
+  }
+};
 
   const tabs = [
     {

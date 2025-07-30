@@ -1,34 +1,49 @@
-import React, { useState } from 'react';
-import { Layout, Table, Button, Input, Space, Typography } from 'antd';
+import React, { useState, useEffect } from 'react';
+import { Layout, Table, Button, Input, Space, Typography, message } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { LogoutOutlined, PlusOutlined, DownloadOutlined } from '@ant-design/icons';
 import * as XLSX from 'xlsx';
+import axios from 'axios';
 import logo from '../assets/logo-further-2.svg';
 
 const { Header, Content } = Layout;
 const { Title } = Typography;
 
-const dummyClients = [
-  {
-    id: 1,
-    clientCode: 'CL001',
-    clientName: 'Alpha Corp',
-    reinsurer: 'Reinsure A',
-    category: 'Asia',
-    clientCountry: 'India',
-    channel: 'Online',
-    monthlyReport: true,
-  },
-  // Add more dummy data...
-];
-
 const Dashboard = () => {
+  const [clients, setClients] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const navigate = useNavigate();
 
-  const filteredClients = dummyClients.filter(client =>
-    client.clientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    client.clientCode.toLowerCase().includes(searchTerm.toLowerCase())
+  // Fetch from backend
+  useEffect(() => {
+    const fetchClients = async () => {
+      try {
+        const response = await axios.get('http://127.0.0.1:8000/api/auth/clients/', {
+          withCredentials: true
+        });
+        const data = response.data.map(client => ({
+          id: client.id,
+          clientCode: client.clientCode || client.client_info?.clientCode,
+          clientName: client.client_info?.clientName,
+          reinsurer: client.client_info?.reinsurer,
+          category: client.client_info?.category,
+          clientCountry: client.client_info?.clientCountry,
+          channel: client.client_info?.channel,
+          monthlyReport: client.client_info?.monthlyReport,
+        }));
+        setClients(data);
+      } catch (error) {
+        console.error('Error fetching client data:', error);
+        message.error('Failed to load client data.');
+      }
+    };
+
+    fetchClients();
+  }, []);
+
+  const filteredClients = clients.filter(client =>
+    client.clientName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    client.clientCode?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const exportToExcel = (data, filename) => {
@@ -46,7 +61,7 @@ const Dashboard = () => {
     { title: 'Country', dataIndex: 'clientCountry' },
     { title: 'Channel', dataIndex: 'channel' },
     {
-      title: 'Status',
+      title: 'Monthly Report',
       dataIndex: 'monthlyReport',
       render: val => val ? 'Active' : 'Inactive',
     },
@@ -90,7 +105,7 @@ const Dashboard = () => {
             <Button icon={<DownloadOutlined />} onClick={() => exportToExcel(filteredClients, 'CurrentClients.xlsx')}>
               Download Current Page
             </Button>
-            <Button icon={<DownloadOutlined />} onClick={() => exportToExcel(dummyClients, 'AllClients.xlsx')}>
+            <Button icon={<DownloadOutlined />} onClick={() => exportToExcel(clients, 'AllClients.xlsx')}>
               Download All
             </Button>
           </Space>
@@ -109,4 +124,3 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
-      
