@@ -147,7 +147,7 @@ const CreatePremiumSection = ({ premiums = [], onSave, onBack, onCancel }) => {
 
       <Modal
         title="Create New Premium"
-        visible={isModalVisible}
+        open={isModalVisible}
         onCancel={handleCancel}
         onOk={handleSave}
         okText="Save & Continue"

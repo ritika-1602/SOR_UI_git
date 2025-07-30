@@ -1,18 +1,20 @@
 import React, { useState } from 'react';
-import { Table, Button, Input, Row, Col } from 'antd';
+import { Table, Button, Input, Row, Col, message } from 'antd';
 
-const initialDiscountRow = {
-  productType: '',
+const initialDiscountRow = (productType) => ({
+  productType,
   numberFrom: '',
   numberTo: '',
   discount: '',
-};
+});
 
-const CreateDiscountSection = ({ discounts = [], onSaveExit }) => {
-  const [dataSource, setDataSource] = useState(discounts);
+const CreateDiscountSection = ({ discounts = [], onSaveExit, selectedProductType }) => {
+  const [dataSource, setDataSource] = useState(
+    discounts.length > 0 ? discounts : [initialDiscountRow(selectedProductType)]
+  );
 
   const handleAddRow = () => {
-    setDataSource([...dataSource, { ...initialDiscountRow }]);
+    setDataSource([...dataSource, initialDiscountRow(selectedProductType)]);
   };
 
   const handleRemoveRow = (index) => {
@@ -27,14 +29,26 @@ const CreateDiscountSection = ({ discounts = [], onSaveExit }) => {
     setDataSource(updated);
   };
 
+  const handleSaveExit = () => {
+    // Validate discount fields
+    const isValid = dataSource.every(row => row.discount.trim() !== '');
+
+    if (!isValid) {
+      message.error('Please fill all Discount (%) fields.');
+      return;
+    }
+
+    onSaveExit(dataSource);
+  };
+
   const columns = [
     {
       title: 'Product Type',
       dataIndex: 'productType',
       render: (_, __, index) => (
         <Input
-          value={dataSource[index].productType}
-          onChange={(e) => handleChange(index, 'productType', e.target.value)}
+          value={selectedProductType}
+          disabled
         />
       ),
     },
@@ -59,12 +73,13 @@ const CreateDiscountSection = ({ discounts = [], onSaveExit }) => {
       ),
     },
     {
-      title: 'Discount (%)',
+      title: <span>Discount (%) <span style={{ color: 'red' }}>*</span></span>,
       dataIndex: 'discount',
       render: (_, __, index) => (
         <Input
           value={dataSource[index].discount}
           onChange={(e) => handleChange(index, 'discount', e.target.value)}
+          status={!dataSource[index].discount ? 'error' : ''}
         />
       ),
     },
@@ -89,7 +104,7 @@ const CreateDiscountSection = ({ discounts = [], onSaveExit }) => {
           <Button type="primary" onClick={handleAddRow}>Add Row</Button>
         </Col>
         <Col>
-          <Button danger onClick={onSaveExit}>Save & Exit</Button>
+          <Button danger onClick={handleSaveExit}>Save & Exit</Button>
         </Col>
       </Row>
     </div>

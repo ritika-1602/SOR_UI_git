@@ -107,7 +107,7 @@ const CreateRetentionSection = ({ clientData, retentionList = [], onSave, onBack
       {/* Add Retention Modal */}
       <Modal
         title="Add Retention"
-        visible={isModalVisible}
+        open={isModalVisible}
         onOk={handleSave}
         onCancel={handleCancel}
         okText="Save & Exit"

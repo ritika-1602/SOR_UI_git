@@ -10,12 +10,14 @@ import CreateDiscountSection from './CreateDiscountSection';
 
 const MultiTabForm = ({ initialData = {}, clientId = null }) => {
   const navigate = useNavigate();
+
   const [clientData, setClientData] = useState(initialData || {});
   const [productData, setProductData] = useState([]);
-  const [selectedProduct, setSelectedProduct] = useState(null);
   const [retentions, setRetentions] = useState([]);
   const [premiumsMap, setPremiumsMap] = useState({});
   const [discountsMap, setDiscountsMap] = useState({});
+  const [selectedProduct, setSelectedProduct] = useState(null);
+
   const [step, setStep] = useState('client');
   const [activeTab, setActiveTab] = useState('products');
 
@@ -37,7 +39,10 @@ const MultiTabForm = ({ initialData = {}, clientId = null }) => {
 
   const handleSavePremiums = (data) => {
     if (selectedProduct?.productCode) {
-      setPremiumsMap((prev) => ({ ...prev, [selectedProduct.productCode]: data }));
+      setPremiumsMap((prev) => ({
+        ...prev,
+        [selectedProduct.productCode]: data,
+      }));
       message.success('Premiums saved');
       setActiveTab('discounts');
     }
@@ -45,10 +50,32 @@ const MultiTabForm = ({ initialData = {}, clientId = null }) => {
 
   const handleSaveDiscounts = (data) => {
     if (selectedProduct?.productCode) {
-      setDiscountsMap((prev) => ({ ...prev, [selectedProduct.productCode]: data }));
+      setDiscountsMap((prev) => ({
+        ...prev,
+        [selectedProduct.productCode]: data,
+      }));
       message.success('Discounts saved');
-      setActiveTab('products');
+      setActiveTab('premiums'); // Back to premiums
     }
+  };
+
+  const handleSaveAndExit = (data) => {
+    // Combine all data for final submission
+    const submittedData = {
+      client: clientData,
+      products: productData,
+      retentions: retentions,
+      premiums: premiumsMap,
+      discounts: discountsMap,
+    };
+
+    console.log('Final Submission:', submittedData);
+
+    // Ideally you’d send this to backend here:
+    // await axios.post('/api/submit-client', submittedData);
+
+    message.success('All data submitted successfully!');
+    navigate('/dashboard'); // Go to dashboard and display
   };
 
   if (step === 'client') {
@@ -62,17 +89,16 @@ const MultiTabForm = ({ initialData = {}, clientId = null }) => {
     );
   }
 
+  const showInitialTabs = !selectedProduct;
+  const showPremiumDiscountTabs = !!selectedProduct;
+
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="bg-white rounded shadow p-6">
-        <Tabs
-          activeKey={activeTab}
-          onChange={setActiveTab}
-          items={[
-            {
-              key: 'products',
-              label: 'Products',
-              children: (
+        <Tabs activeKey={activeTab} onChange={setActiveTab}>
+          {showInitialTabs && (
+            <>
+              <Tabs.TabPane key="products" tab="Products">
                 <CreateProductSection
                   productList={productData}
                   onAdd={handleAddProduct}
@@ -80,56 +106,54 @@ const MultiTabForm = ({ initialData = {}, clientId = null }) => {
                   onExit={() => navigate('/dashboard')}
                   onSelect={handleSelectProduct}
                 />
-              ),
-            },
-            {
-              key: 'retentions',
-              label: 'Retentions',
-              children: (
+              </Tabs.TabPane>
+
+              <Tabs.TabPane key="retentions" tab="Retentions">
                 <CreateRetentionSection
                   clientData={clientData}
                   retentionList={retentions}
-                  onSave={(data) => setRetentions(data)}
-                  onBack={() => console.log('Back')}
+                  onSave={setRetentions}
+                  onBack={() => {setActiveTab('products')}}
                   onCancel={() => navigate('/dashboard')}
                 />
-              ),
-            },
-            {
-              key: 'premiums',
-              label: 'Premiums',
-              children: (
+              </Tabs.TabPane>
+            </>
+          )}
+
+          {showPremiumDiscountTabs && (
+            <>
+              <Tabs.TabPane key="premiums" tab="Premiums">
                 <CreatePremiumSection
                   selectedProduct={selectedProduct}
                   clientData={clientData}
-                  premiums={premiumsMap[selectedProduct?.productCode] || []}
-                  setPremiums={(updatedPremiums) =>
+                  premiums={premiumsMap[selectedProduct.productCode] || []}
+                  setPremiums={(updated) =>
                     setPremiumsMap((prev) => ({
                       ...prev,
-                      [selectedProduct?.productCode]: updatedPremiums,
+                      [selectedProduct.productCode]: updated,
                     }))
                   }
                   onSave={handleSavePremiums}
-                  onBack={() => setActiveTab('products')}
+                  onBack={() => {
+                    setSelectedProduct(null);
+                    setActiveTab('products');
+                  }}
                   onCancel={() => navigate('/dashboard')}
                 />
-              ),
-            },
+              </Tabs.TabPane>
 
-            {
-              key: 'discounts',
-              label: 'Discounts',
-              children: (
+              <Tabs.TabPane key="discounts" tab="Discounts">
                 <CreateDiscountSection
-                  discounts={discountsMap[selectedProduct?.productCode] || []}
+                  selectedProductType={selectedProduct.productName}
                   onSave={handleSaveDiscounts}
                   onBack={() => setActiveTab('premiums')}
                   onCancel={() => navigate('/dashboard')}
+                  onSaveExit={handleSaveAndExit}
                 />
-              ),
-            },
-          ]}
-        />
+              </Tabs.TabPane>
+            </>
+          )}
+        </Tabs>
       </div>
     </div>
   );

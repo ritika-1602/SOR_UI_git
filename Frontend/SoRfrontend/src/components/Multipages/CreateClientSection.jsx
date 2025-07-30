@@ -43,7 +43,9 @@ const CreateClientSection = ({ initialData, onContinue, onExit, onCancel }) => {
       >
         <Row gutter={24}>
           <Col xs={24} md={12}>
-            <Form.Item name="clientCode" label="Client Code" rules={[{ required: true }]}>
+            <Form.Item name="clientCode" label="Client Code" rules={[
+              { required: true },
+              {max: 6, message:'Client code cannot exceed 6 characters'}]}>
               <Input placeholder="Enter client code" />
             </Form.Item>
           </Col>

@@ -28,8 +28,23 @@ const CreateProductSection = ({
   const handleAddProduct = () => {
   const { productName, productCatalogueId, productType, house, comments } = formData;
 
-  if (!productName || !productCatalogueId) {
-    Modal.warning({ title: 'Please fill required fields' });
+  if (!productName.trim()) {
+    Modal.warning({ title: 'Validation Error', content: 'Product Name is required.' });
+    return;
+  }
+
+  if (!productCatalogueId.trim()) {
+    Modal.warning({ title: 'Validation Error', content: 'Product Catalogue ID is required.' });
+    return;
+  }
+
+  if (!productType) {
+    Modal.warning({ title: 'Validation Error', content: 'Product Type is required.' });
+    return;
+  }
+
+  if (productType === 'Standard' && !['Yes', 'No'].includes(house)) {
+    Modal.warning({ title: 'Validation Error', content: 'House field must be Yes or No for Standard type.' });
     return;
   }
 
@@ -132,7 +147,7 @@ const CreateProductSection = ({
       >
         <div className="space-y-4">
           <div>
-            <label>Product Name*</label>
+            <label>Product Name <span style={{ color: 'red', marginRight: 4 }}>*</span></label>
             <Input
               value={formData.productName}
               onChange={(e) => handleChange('productName', e.target.value)}
@@ -141,7 +156,7 @@ const CreateProductSection = ({
           </div>
 
           <div>
-            <label>Product Catalogue ID*</label>
+            <label>Product Catalogue ID <span style={{ color: 'red', marginRight: 4 }}>*</span></label>
             <Input
               value={formData.productCatalogueId}
               onChange={(e) => handleChange('productCatalogueId', e.target.value)}
@@ -158,7 +173,7 @@ const CreateProductSection = ({
           </div>
 
           <div>
-            <label>Product Type*</label>
+            <label>Product Type <span style={{ color: 'red', marginRight: 4 }}>*</span></label>
             <Select
               value={formData.productType}
               onChange={(value) => handleChange('productType', value)}
@@ -171,7 +186,7 @@ const CreateProductSection = ({
 
           {formData.productType === 'Standard' && (
             <div>
-                <label>House*</label>
+                <label>House <span style={{ color: 'red', marginRight: 4 }}>*</span></label>
                 <Select
                 value={formData.house}
                 onChange={(value) => handleChange('house', value)}
