@@ -123,4 +123,8 @@ const Dashboard = () => {
   );
 };
 
+<<<<<<< HEAD
 export default Dashboard;
+=======
+export default Dashboard;
+>>>>>>> main

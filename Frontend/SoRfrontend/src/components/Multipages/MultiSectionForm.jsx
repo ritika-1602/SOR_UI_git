@@ -18,6 +18,7 @@ const MultiTabForm = ({ initialData = {}, clientId = null }) => {
   const [discountsMap, setDiscountsMap] = useState({});
   const [selectedProduct, setSelectedProduct] = useState(null);
 
+<<<<<<< HEAD
   const [step, setStep] = useState('client');
   const [activeTab, setActiveTab] = useState('products');
 
@@ -41,6 +42,13 @@ const handleClientContinue = (data) => {
       }
     }
   };
+=======
+  const handleClientContinue = (data) => {
+  const wrappedData = { client_info: data };  // Wrap client info correctly
+  setClientData(wrappedData);
+  message.success('Client data saved!');
+};
+>>>>>>> main
 
   fetchProducts();
 }, [clientData]);

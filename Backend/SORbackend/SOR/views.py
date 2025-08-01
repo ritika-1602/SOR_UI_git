@@ -166,4 +166,8 @@ class DiscountViewSet(viewsets.ModelViewSet):
     queryset = Discount.objects.all()
     serializer_class = DiscountSerializer
     filter_backends = [DjangoFilterBackend]
+<<<<<<< HEAD
     filterset_fields = ['product']  # Fetch by productID
+=======
+    filterset_fields = ['product']  # Fetch by productID
+>>>>>>> main

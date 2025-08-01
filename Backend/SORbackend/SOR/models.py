@@ -92,7 +92,11 @@ class ProductInfo(models.Model):
     productCatalogueId = models.CharField(max_length=100)
     comments = models.TextField(blank=True, null=True)
     productType = models.CharField(max_length=50)
+<<<<<<< HEAD
     house = models.CharField(max_length=10,blank=True)
+=======
+    house = models.CharField(max_length=10)
+>>>>>>> main
 
 class RetentionInfo(models.Model):
     client = models.OneToOneField(Client, on_delete=models.CASCADE, related_name='retention_info')
@@ -110,7 +114,11 @@ class PremiumRate(models.Model):
     Reinsurance_Premium = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     Risk_Premium = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     BD_Fees = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+<<<<<<< HEAD
     currency = models.CharField(max_length=250, blank=True, null=True)
+=======
+    comment = models.CharField(max_length=250, blank=True, null=True)
+>>>>>>> main
     gross_premium = models.DecimalField(max_digits=13, decimal_places=5, null=True, blank=True)
     taxes = models.DecimalField(max_digits=13, decimal_places=5, null=True, blank=True)
     fronting_fee = models.DecimalField(max_digits=13, decimal_places=5, null=True, blank=True)
@@ -121,4 +129,8 @@ class Discount(models.Model):
     product = models.ForeignKey(ProductInfo, on_delete=models.CASCADE, related_name='discounts')
     number_from = models.IntegerField(null=True, blank=True)
     number_to = models.IntegerField(null=True, blank=True)
+<<<<<<< HEAD
     discount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+=======
+    discount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+>>>>>>> main
