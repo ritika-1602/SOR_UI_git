@@ -21,11 +21,15 @@ const MultiTabForm = ({ initialData = {}, clientId = null }) => {
   const [step, setStep] = useState('client');
   const [activeTab, setActiveTab] = useState('products');
 
-  const handleClientContinue = (data) => {
-    setClientData(data);
-    setStep('productInfo');
-    message.success('Client Info Saved');
-  };
+const handleClientContinue = (data) => {
+  setClientData(data);
+  setSelectedProduct(null);        // Show product and retention tabs
+  setStep('productInfo');          // ✅ This is crucial: move away from client step
+  setActiveTab('products');        // Move to Products tab
+  message.success('Client Info Saved');
+};
+
+
 
   const handleAddProduct = (product) => {
     setProductData((prev) => [...prev, product]);

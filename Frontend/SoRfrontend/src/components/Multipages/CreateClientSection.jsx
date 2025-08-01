@@ -1,6 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Form, Input, Select, DatePicker, Checkbox, Button, Row, Col } from 'antd';
+import {
+  Form,
+  Input,
+  Select,
+  DatePicker,
+  Checkbox,
+  Button,
+  Row,
+  Col,
+  message,
+} from 'antd';
+import axios from 'axios';
+import dayjs from 'dayjs';
 
 const { Option } = Select;
 
@@ -10,19 +22,39 @@ const CreateClientSection = ({ initialData, onContinue, onExit, onCancel }) => {
 
   useEffect(() => {
     if (initialData) {
-      form.setFieldsValue(initialData);
+      const updated = {
+        ...initialData.client_info,
+        clientCode: initialData.clientCode,
+        launchDate: initialData.client_info?.launchDate
+          ? dayjs(initialData.client_info.launchDate)
+          : null,
+      };
+      form.setFieldsValue(updated);
     }
   }, [initialData, form]);
 
-  const handleFinish = (values) => {
-    onContinue(values); // Pass form data to parent
+  const handleFinish = async (values) => {
+    try {
+      const response = await axios.post('http://localhost:8000/api/auth/clients/', {
+        clientCode: values.clientCode,
+        client_info: {
+          ...values,
+          launchDate: values.launchDate ? values.launchDate.format('YYYY-MM-DD') : null,
+
+        },
+      });
+
+      message.success('Client Info Saved');
+      onContinue(response.data); // Send saved client data to parent
+    } catch (error) {
+      console.error('Error saving client info:', error);
+      message.error('Failed to save client info');
+    }
   };
-  const handleContinue=(values) =>{
-    onContinue(values);
-  }
+
   const handleSaveExit = () => {
     const data = form.getFieldsValue();
-    onExit(data); // Pass current form data to exit handler
+    onExit(data); // Trigger exit logic with current form data
   };
 
   const handleCancel = () => {
@@ -43,21 +75,34 @@ const CreateClientSection = ({ initialData, onContinue, onExit, onCancel }) => {
       >
         <Row gutter={24}>
           <Col xs={24} md={12}>
-            <Form.Item name="clientCode" label="Client Code" rules={[
-              { required: true },
-              {max: 6, message:'Client code cannot exceed 6 characters'}]}>
+            <Form.Item
+              name="clientCode"
+              label="Client Code"
+              rules={[
+                { required: true },
+                { max: 6, message: 'Client code cannot exceed 6 characters' },
+              ]}
+            >
               <Input placeholder="Enter client code" />
             </Form.Item>
           </Col>
 
           <Col xs={24} md={12}>
-            <Form.Item name="clientName" label="Client Name" rules={[{ required: true }]}>
+            <Form.Item
+              name="clientName"
+              label="Client Name"
+              rules={[{ required: true }]}
+            >
               <Input placeholder="Enter client name" />
             </Form.Item>
           </Col>
 
           <Col xs={24} md={12}>
-            <Form.Item name="clientCountry" label="Client Country" rules={[{ required: true }]}>
+            <Form.Item
+              name="clientCountry"
+              label="Client Country"
+              rules={[{ required: true }]}
+            >
               <Select placeholder="Select country">
                 <Option value="IN">India</Option>
                 <Option value="US">USA</Option>
@@ -67,13 +112,21 @@ const CreateClientSection = ({ initialData, onContinue, onExit, onCancel }) => {
           </Col>
 
           <Col xs={24} md={12}>
-            <Form.Item name="launchDate" label="Launch Date" rules={[{ required: true }]}>
+            <Form.Item
+              name="launchDate"
+              label="Launch Date"
+              rules={[{ required: true }]}
+            >
               <DatePicker className="w-full" />
             </Form.Item>
           </Col>
 
           <Col xs={24} md={12}>
-            <Form.Item name="reinsurer" label="Reinsurer" rules={[{ required: true }]}>
+            <Form.Item
+              name="reinsurer"
+              label="Reinsurer"
+              rules={[{ required: true }]}
+            >
               <Select placeholder="Select reinsurer">
                 <Option value="sirius">Sirius Re</Option>
                 <Option value="arch">Arch</Option>
@@ -94,7 +147,11 @@ const CreateClientSection = ({ initialData, onContinue, onExit, onCancel }) => {
           </Col>
 
           <Col xs={24} md={12}>
-            <Form.Item name="channel" label="Channel" rules={[{ required: true }]}>
+            <Form.Item
+              name="channel"
+              label="Channel"
+              rules={[{ required: true }]}
+            >
               <Select placeholder="Select channel">
                 <Option value="wholesale">Wholesale</Option>
                 <Option value="retail">Retail</Option>
@@ -104,7 +161,11 @@ const CreateClientSection = ({ initialData, onContinue, onExit, onCancel }) => {
           </Col>
 
           <Col xs={24} md={12}>
-            <Form.Item name="freqBordereau" label="Frequency Bordereau" rules={[{ required: true }]}>
+            <Form.Item
+              name="freqBordereau"
+              label="Frequency Bordereau"
+              rules={[{ required: true }]}
+            >
               <Select placeholder="Select frequency">
                 <Option value="monthly">Monthly</Option>
                 <Option value="quarterly">Quarterly</Option>
@@ -116,7 +177,11 @@ const CreateClientSection = ({ initialData, onContinue, onExit, onCancel }) => {
           </Col>
 
           <Col xs={24} md={12}>
-            <Form.Item name="freqReport" label="Frequency Report" rules={[{ required: true }]}>
+            <Form.Item
+              name="freqReport"
+              label="Frequency Report"
+              rules={[{ required: true }]}
+            >
               <Select placeholder="Select frequency">
                 <Option value="monthly">Monthly</Option>
                 <Option value="quarterly">Quarterly</Option>
@@ -128,7 +193,11 @@ const CreateClientSection = ({ initialData, onContinue, onExit, onCancel }) => {
           </Col>
 
           <Col xs={24} md={12}>
-            <Form.Item name="accountingPrinciple" label="Accounting Principle" rules={[{ required: true }]}>
+            <Form.Item
+              name="accountingPrinciple"
+              label="Accounting Principle"
+              rules={[{ required: true }]}
+            >
               <Select placeholder="Select principle">
                 <Option value="charged">Premium Charged</Option>
                 <Option value="earned">Premium Earned</Option>
@@ -138,7 +207,11 @@ const CreateClientSection = ({ initialData, onContinue, onExit, onCancel }) => {
           </Col>
 
           <Col xs={24} md={12}>
-            <Form.Item name="primaryCurrency" label="Primary Currency" rules={[{ required: true }]}>
+            <Form.Item
+              name="primaryCurrency"
+              label="Primary Currency"
+              rules={[{ required: true }]}
+            >
               <Select placeholder="Select currency">
                 <Option value="eur">EUR</Option>
                 <Option value="usd">USD</Option>
@@ -180,9 +253,15 @@ const CreateClientSection = ({ initialData, onContinue, onExit, onCancel }) => {
         </Row>
 
         <div className="flex gap-4 mt-6">
-          <Button type="primary" onClick={()=>form.submit()}>Save & Continue</Button>
-          <Button type="default" onClick={handleSaveExit}>Save & Exit</Button>
-          <Button danger onClick={handleCancel}>Cancel</Button>
+          <Button type="primary" htmlType='submit'>
+            Save & Continue
+          </Button>
+          <Button type="default" onClick={handleSaveExit}>
+            Save & Exit
+          </Button>
+          <Button danger onClick={handleCancel}>
+            Cancel
+          </Button>
         </div>
       </Form>
     </div>
