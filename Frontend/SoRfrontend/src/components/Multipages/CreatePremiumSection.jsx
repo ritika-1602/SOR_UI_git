@@ -28,7 +28,7 @@ const CreatePremiumSection = ({ premiums = [], onSave, onBack, onCancel }) => {
     reinsPrem: '',
     riskPrem: '',
     furtherFees: '',
-    comment: '',
+    currency: '',
     grossPrem: '',
     taxes: '',
     frontingFee: '',
@@ -47,7 +47,7 @@ const CreatePremiumSection = ({ premiums = [], onSave, onBack, onCancel }) => {
     { title: 'Reinsurance Prem', dataIndex: 'reinsPrem', key: 'reinsPrem' },
     { title: 'Risk Prem', dataIndex: 'riskPrem', key: 'riskPrem' },
     { title: 'Further Fees', dataIndex: 'furtherFees', key: 'furtherFees' },
-    { title: 'Comment', dataIndex: 'comment', key: 'comment' },
+    { title: 'Currency', dataIndex: 'currency', key: 'currency' },
     { title: 'Gross Prem', dataIndex: 'grossPrem', key: 'grossPrem' },
     { title: 'Taxes', dataIndex: 'taxes', key: 'taxes' },
     { title: 'Fronting Fee', dataIndex: 'frontingFee', key: 'frontingFee' },
@@ -204,10 +204,10 @@ const CreatePremiumSection = ({ premiums = [], onSave, onBack, onCancel }) => {
                     onChange={(e) => handleInputChange(index, 'furtherFees', e.target.value)}
                   />
                 </Form.Item>
-                <Form.Item label="Comment">
+                <Form.Item label="Currency">
                   <Input
-                    value={row.comment}
-                    onChange={(e) => handleInputChange(index, 'comment', e.target.value)}
+                    value={row.currency}
+                    onChange={(e) => handleInputChange(index, 'currency', e.target.value)}
                   />
                 </Form.Item>
                 <Form.Item label="Gross Prem">
