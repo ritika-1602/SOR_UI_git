@@ -12,9 +12,9 @@ from .views import (
     ClientInfoViewSet,
     ProductInfoViewSet,
     RetentionInfoViewSet,
-    PremiumInfoViewSet,
-    DiscountInfoViewSet,
-    login
+    PremiumRateViewSet,
+    DiscountViewSet,
+    login_view
 )
 
 router = DefaultRouter()
@@ -22,10 +22,10 @@ router.register(r'clients', ClientViewSet, basename='client')
 router.register(r'client-info', ClientInfoViewSet, basename='client-info')
 router.register(r'product-info', ProductInfoViewSet, basename='product-info')
 router.register(r'retention-info', RetentionInfoViewSet, basename='retention-info')
-router.register(r'premium-info', PremiumInfoViewSet, basename='premium-info')
-router.register(r'discount-info', DiscountInfoViewSet, basename='discount-info')
+router.register(r'premium-rates', PremiumRateViewSet, basename='premium-rate')
+router.register(r'discounts', DiscountViewSet, basename='discount')
 
 urlpatterns = [
-    path('login/', login, name='login'),
+    path('login/', login_view, name='login'),
     path('', include(router.urls)),
 ]
