@@ -21,7 +21,11 @@ const LoginForm = () => {
       if (!response.ok) throw new Error("Login failed");
 
       localStorage.setItem("isAuthenticated", "true");
+<<<<<<< HEAD
+      navigate("/dashboard",{ replace: true });
+=======
       navigate("/dashboard",{replace: true});
+>>>>>>> main
     } catch (error) {
       message.error("Login failed. Check credentials.",error);
       console.log(error)

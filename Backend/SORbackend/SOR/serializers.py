@@ -1,3 +1,5 @@
+<<<<<<< HEAD
+=======
 # from rest_framework import serializers
 # from .models import (
 #     Client, ClientInfo, ProductInfo, RetentionInfo,
@@ -98,6 +100,7 @@
 
 #         return instance
 
+>>>>>>> main
 
 from rest_framework import serializers
 from .models import (
@@ -123,7 +126,11 @@ class ProductInfoSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductInfo
         fields = '__all__'
+<<<<<<< HEAD
+        read_only_fields = ['productID']
+=======
         read_only_fields = ['client', 'productID']
+>>>>>>> main
 
 class ClientInfoSerializer(serializers.ModelSerializer):
     class Meta:
@@ -135,7 +142,11 @@ class RetentionInfoSerializer(serializers.ModelSerializer):
     class Meta:
         model = RetentionInfo
         fields = '__all__'
+<<<<<<< HEAD
+        # read_only_fields = ['client']
+=======
         read_only_fields = ['client']
+>>>>>>> main
 
 class ClientSerializer(serializers.ModelSerializer):
     client_info = ClientInfoSerializer(required=False)
@@ -192,4 +203,8 @@ class ClientSerializer(serializers.ModelSerializer):
                 else:
                     model_class.objects.create(client=instance, **data)
 
+<<<<<<< HEAD
         return instance
+=======
+        return instance
+>>>>>>> main
