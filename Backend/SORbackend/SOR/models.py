@@ -92,7 +92,7 @@ class ProductInfo(models.Model):
     productCatalogueId = models.CharField(max_length=100)
     comments = models.TextField(blank=True, null=True)
     productType = models.CharField(max_length=50)
-    house = models.CharField(max_length=10)
+    house = models.CharField(max_length=10,blank=True)
 
 class RetentionInfo(models.Model):
     client = models.OneToOneField(Client, on_delete=models.CASCADE, related_name='retention_info')
