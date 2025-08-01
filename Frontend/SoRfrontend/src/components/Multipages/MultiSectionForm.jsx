@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Tabs, message } from 'antd';
 
@@ -29,6 +29,21 @@ const handleClientContinue = (data) => {
   message.success('Client Info Saved');
 };
 
+  useEffect(() => {
+  const fetchProducts = async () => {
+    if (clientData?.id) {
+      try {
+        const res = await axios.get(`/api/auth/product-info/?client=${clientData.id}`);
+        setProductData(res.data);
+      } catch (err) {
+        console.error('Failed to fetch products', err);
+        message.error('Could not load products');
+      }
+    }
+  };
+
+  fetchProducts();
+}, [clientData]);
 
 
   const handleAddProduct = (product) => {

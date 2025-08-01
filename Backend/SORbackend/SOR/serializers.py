@@ -23,7 +23,7 @@ class ProductInfoSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductInfo
         fields = '__all__'
-        read_only_fields = ['client', 'productID']
+        read_only_fields = ['productID']
 
 class ClientInfoSerializer(serializers.ModelSerializer):
     class Meta:
@@ -35,7 +35,7 @@ class RetentionInfoSerializer(serializers.ModelSerializer):
     class Meta:
         model = RetentionInfo
         fields = '__all__'
-        read_only_fields = ['client']
+        # read_only_fields = ['client']
 
 class ClientSerializer(serializers.ModelSerializer):
     client_info = ClientInfoSerializer(required=False)
